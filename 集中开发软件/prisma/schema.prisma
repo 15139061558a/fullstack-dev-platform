@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  avatar    String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  projects    ProjectMember[]
+  files       File[]
+  deployments Deployment[]
+  activities  Activity[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        ProjectType @default(FULLSTACK)
+  status      ProjectStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关系
+  members     ProjectMember[]
+  files       File[]
+  deployments Deployment[]
+  activities  Activity[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  role      ProjectRole @default(DEVELOPER)
+  joinedAt  DateTime @default(now())
+
+  // 关系
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+model File {
+  id        String   @id @default(cuid())
+  name      String
+  path      String
+  content   String
+  type      FileType
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, path])
+  @@map("files")
+}
+
+model Deployment {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  status    DeploymentStatus @default(PENDING)
+  config    String // JSON配置
+  logs      String? // 部署日志
+  url       String? // 部署URL
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("deployments")
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      ActivityType
+  userId    String
+  projectId String?
+  data      String // JSON数据
+  createdAt DateTime @default(now())
+
+  // 关系
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+// 枚举类型
+enum Role {
+  ADMIN
+  USER
+}
+
+enum ProjectType {
+  FRONTEND
+  BACKEND
+  FULLSTACK
+  MOBILE
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  DEVELOPER
+  VIEWER
+}
+
+enum FileType {
+  FRONTEND
+  BACKEND
+  CONFIG
+  DOCUMENT
+}
+
+enum DeploymentStatus {
+  PENDING
+  BUILDING
+  DEPLOYING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum ActivityType {
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  FILE_CREATED
+  FILE_UPDATED
+  FILE_DELETED
+  DEPLOYMENT_STARTED
+  DEPLOYMENT_COMPLETED
+  USER_JOINED
+  USER_LEFT
+} 

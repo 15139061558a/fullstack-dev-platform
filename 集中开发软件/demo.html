@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集成开发平台 - 三联视图工作台演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .header .status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-offline {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .triple-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            height: calc(100vh - 80px);
+            padding: 1rem;
+        }
+
+        .editor-panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .panel-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-frontend {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-backend {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-preview {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            overflow-y: auto;
+        }
+
+        .preview-content {
+            flex: 1;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+        }
+
+        .preview-demo {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .preview-demo h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        .preview-demo p {
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .demo-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .demo-button:hover {
+            background: #2563eb;
+        }
+
+        .collaboration-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .user-avatars {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .code-line {
+            margin-bottom: 0.25rem;
+        }
+
+        .code-keyword {
+            color: #569cd6;
+        }
+
+        .code-string {
+            color: #ce9178;
+        }
+
+        .code-comment {
+            color: #6a9955;
+        }
+
+        .code-function {
+            color: #dcdcaa;
+        }
+
+        @media (max-width: 1024px) {
+            .triple-view {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 集成开发平台 - 三联视图工作台</h1>
+        <div class="status">
+            <div class="status-indicator status-online">
+                <span>●</span>
+                实时协作已连接
+            </div>
+            <div class="user-avatars">
+                <div class="user-avatar">张</div>
+                <div class="user-avatar">李</div>
+                <div class="user-avatar">王</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="triple-view">
+        <!-- 前端编辑器 -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <span class="panel-title">前端编辑器</span>
+                <span class="panel-badge badge-frontend">React/TypeScript</span>
+            </div>
+            <div class="editor-content">
+                <div class="code-line"><span class="code-keyword">import</span> <span class="code-string">React</span> <span class="code-keyword">from</span> <span class="code-string">'react'</span>;</div>
+                <div class="code-line"><span class="code-keyword">import</span> <span class="code-string">'./App.css'</span>;</div>
+                <div class="code-line"></div>
+                <div class="code-line"><span class="code-keyword">function</span> <span class="code-function">App</span>() {</div>
+                <div class="code-line">  <span class="code-keyword">const</span> [userData, setUserData] = <span class="code-function">useSyncState</span>(<span class="code-string">'/api/user'</span>);</div>
+                <div class="code-line"></div>
+                <div class="code-line">  <span class="code-keyword">return</span> (</div>
+                <div class="code-line">    &lt;<span class="code-keyword">div</span> <span class="code-function">className</span>=<span class="code-string">"App"</span>&gt;</div>
+                <div class="code-line">      &lt;<span class="code-keyword">header</span> <span class="code-function">className</span>=<span class="code-string">"App-header"</span>&gt;</div>
+                <div class="code-line">        &lt;<span class="code-keyword">h1</span>&gt;欢迎使用集成开发平台&lt;/<span class="code-keyword">h1</span>&gt;</div>
+                <div class="code-line">        &lt;<span class="code-keyword">p</span>&gt;开始构建你的全栈应用吧！&lt;/<span class="code-keyword">p</span>&gt;</div>
+                <div class="code-line">        &lt;<span class="code-keyword">button</span> <span class="code-function">onClick</span>={<span class="code-function">()</span> =&gt; <span class="code-function">setUserData</span>({...userData, name: <span class="code-string">'新用户'</span>})}&gt;</div>
+                <div class="code-line">          更新用户数据</div>
+                <div class="code-line">        &lt;/<span class="code-keyword">button</span>&gt;</div>
+                <div class="code-line">      &lt;/<span class="code-keyword">header</span>&gt;</div>
+                <div class="code-line">    &lt;/<span class="code-keyword">div</span>&gt;</div>
+                <div class="code-line">  );</div>
+                <div class="code-line">}</div>
+                <div class="code-line"></div>
+                <div class="code-line"><span class="code-keyword">export default</span> App;</div>
+            </div>
+        </div>
+
+        <!-- 后端编辑器 -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <span class="panel-title">后端编辑器</span>
+                <span class="panel-badge badge-backend">Node.js/Express</span>
+            </div>
+            <div class="editor-content">
+                <div class="code-line"><span class="code-keyword">const</span> express = <span class="code-function">require</span>(<span class="code-string">'express'</span>);</div>
+                <div class="code-line"><span class="code-keyword">const</span> cors = <span class="code-function">require</span>(<span class="code-string">'cors'</span>);</div>
+                <div class="code-line"><span class="code-keyword">const</span> app = <span class="code-function">express</span>();</div>
+                <div class="code-line"></div>
+                <div class="code-line">app.<span class="code-function">use</span>(cors());</div>
+                <div class="code-line">app.<span class="code-function">use</span>(express.<span class="code-function">json</span>());</div>
+                <div class="code-line"></div>
+                <div class="code-line"><span class="code-comment">// 用户API</span></div>
+                <div class="code-line">app.<span class="code-function">get</span>(<span class="code-string">'/api/user'</span>, <span class="code-function">(req, res)</span> =&gt; {</div>
+                <div class="code-line">  <span class="code-keyword">const</span> userData = {</div>
+                <div class="code-line">    id: <span class="code-string">'1'</span>,</div>
+                <div class="code-line">    name: <span class="code-string">'张三'</span>,</div>
+                <div class="code-line">    email: <span class="code-string">'zhangsan@example.com'</span>,</div>
+                <div class="code-line">    avatar: <span class="code-string">'https://example.com/avatar.jpg'</span></div>
+                <div class="code-line">  };</div>
+                <div class="code-line">  res.<span class="code-function">json</span>(userData);</div>
+                <div class="code-line">});</div>
+                <div class="code-line"></div>
+                <div class="code-line"><span class="code-comment">// 更新用户API</span></div>
+                <div class="code-line">app.<span class="code-function">put</span>(<span class="code-string">'/api/user'</span>, <span class="code-function">(req, res)</span> =&gt; {</div>
+                <div class="code-line">  <span class="code-keyword">const</span> { name, email } = req.body;</div>
+                <div class="code-line">  <span class="code-comment">// 这里会更新数据库</span></div>
+                <div class="code-line">  res.<span class="code-function">json</span>({ success: <span class="code-keyword">true</span>, message: <span class="code-string">'用户更新成功'</span> });</div>
+                <div class="code-line">});</div>
+                <div class="code-line"></div>
+                <div class="code-line"><span class="code-keyword">const</span> PORT = process.env.PORT || <span class="code-string">5000</span>;</div>
+                <div class="code-line">app.<span class="code-function">listen</span>(PORT, <span class="code-function">()</span> =&gt; {</div>
+                <div class="code-line">  console.<span class="code-function">log</span>(<span class="code-string">`服务器运行在端口 ${PORT}`</span>);</div>
+                <div class="code-line">});</div>
+            </div>
+        </div>
+
+        <!-- 实时预览窗口 -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <span class="panel-title">实时预览</span>
+                <span class="panel-badge badge-preview">自动刷新</span>
+            </div>
+            <div class="preview-content">
+                <div class="preview-demo">
+                    <h3>🚀 集成开发平台</h3>
+                    <p>开始构建你的全栈应用吧！</p>
+                    <button class="demo-button" onclick="updateUser()">更新用户数据</button>
+                    <div style="margin-top: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 0.5rem;">
+                        <h4 style="margin-bottom: 0.5rem;">当前用户数据：</h4>
+                        <div id="userData" style="font-family: monospace; font-size: 0.875rem;">
+                            { "id": "1", "name": "张三", "email": "zhangsan@example.com" }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="collaboration-indicator">
+        <div>👥 3 人正在协作</div>
+    </div>
+
+    <script>
+        // 模拟实时协作功能
+        function updateUser() {
+            const userDataElement = document.getElementById('userData');
+            const newName = prompt('请输入新的用户名：', '张三');
+            if (newName) {
+                userDataElement.innerHTML = `{ "id": "1", "name": "${newName}", "email": "zhangsan@example.com" }`;
+                
+                // 模拟实时同步
+                setTimeout(() => {
+                    alert('✅ 用户数据已同步到所有协作者！');
+                }, 500);
+            }
+        }
+
+        // 模拟实时协作指示器
+        setInterval(() => {
+            const indicator = document.querySelector('.collaboration-indicator');
+            const isOnline = Math.random() > 0.1;
+            indicator.style.background = isOnline ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)';
+            indicator.innerHTML = isOnline ? '👥 3 人正在协作' : '⚠️ 连接不稳定';
+        }, 3000);
+
+        // 模拟代码编辑器的实时更新
+        let editCount = 0;
+        setInterval(() => {
+            editCount++;
+            if (editCount % 10 === 0) {
+                const editors = document.querySelectorAll('.editor-content');
+                editors.forEach(editor => {
+                    editor.style.opacity = '0.8';
+                    setTimeout(() => {
+                        editor.style.opacity = '1';
+                    }, 200);
+                });
+            }
+        }, 1000);
+    </script>
+</body>
+</html> 
